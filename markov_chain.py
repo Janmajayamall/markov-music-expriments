@@ -12,6 +12,7 @@ class MarkovChain:
     def __init__(self):
         self.chain = defaultdict(dict)
         self.sums = defaultdict(int)
+        self.time = []
 
     @staticmethod
     def create_from_dict(dict):
@@ -37,15 +38,16 @@ class MarkovChain:
                 string += ":"+str(i)
         return string
     
-    def add(self, from_, to_, duration):
+    def add(self, from_, to_):
         _from = self.format_val(from_)
         _to = self.format_val(to_)
-        _to += ":" + str(duration)
-        # print(_from, _to)
         if _to not in self.chain[_from] :
             self.chain[_from][_to] = 0
         self.chain[_from][_to] += 1
         self.sums[_from] += 1
+    
+    def set_time(self, dist):
+        self.time = dist
 
     def get_next(self, seed_note):
         if seed_note is None or seed_note not in self.chain:
@@ -57,6 +59,9 @@ class MarkovChain:
             next_note_counter -= frequency
             if next_note_counter <= 0:
                 return note
+            
+    def get_time(self):
+        return random.choice(self.time)
 
     def merge(self, other):
         assert isinstance(other, MarkovChain)
@@ -83,8 +88,8 @@ class MarkovChain:
                 out += "-- " 
             out += "\n"
             index += 1
-            if index >= limit :
-                break
+            # if index >= limit :
+            #     break
         print(out)
 
         # _col = lambda string: '{}'.format(string)

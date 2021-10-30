@@ -5,10 +5,6 @@ import hashlib
 store={}
 
 def inspect(filename):
-
-     
-
-
     mid = mido.MidiFile(filename)
     # print(mid.headers)
     for i, track in enumerate(mid.tracks):
@@ -35,5 +31,5 @@ def inspect(filename):
     #     print(key, val)
 
 if __name__ == '__main__':
-    inspect("GG_Mean_Bean_Final.mid")
+    inspect("o1.mid")
     
