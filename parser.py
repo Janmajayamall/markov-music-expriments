@@ -36,7 +36,7 @@ class Parser:
         markov chain.
         """
         midi = mido.MidiFile(self.filename)
-        print("Ticks per beat - ", midi.ticks_per_beat)
+        # print("Ticks per beat - ", midi.ticks_per_beat)
         self.ticks_per_beat = midi.ticks_per_beat
         previous_chunk = []
         current_chunk = []
@@ -46,18 +46,36 @@ class Parser:
             prev=[]
             curr=[]
             for msg in track:
-                if msg.type != "note_off" and msg.type != "marker":
+                if msg.type == "note_on" and msg.time != 0:
+                    # make the current state
+                    for vp in prev:
+                        for vc in curr:
+                            self.markov_chain.add(vp.bytes(), vc.bytes(), ctime)
+                    prev=curr
+                    curr=[]
+                if msg.type == "note_off":
+                    # make the current state
+                if msg.type == "note_on" and msg.time == 0:
+                    # carry on
+
+                    print(msg)
                     if msg.time != 0:
                         #crete connections
                         if len(curr) != 0:
-                            print("-------")
-                            print(msg.time)
-                            print(prev)
-                            print(curr)
-                            print("-------")
+                            # print("-------")
+                            # print(msg.time)
+                            # print(prev)
+                            # print(curr)
+                            # print("-------")
                             ctime = curr[0].time
+                            # print(ctime)
+                            # print(curr)
                             for vp in prev:
                                 for vc in curr:
+                                    print("---------------------")
+                                    print(vp,vc)
+                                    print(vp.bytes(),vc.bytes())
+                                    print("---------------------")
                                     self.markov_chain.add(vp.bytes(), vc.bytes(), ctime)
                         prev=curr
                         curr=[]

@@ -31,8 +31,10 @@ class MarkovChain:
     def format_val(self, val):
         string = ""
         for i in val:
-            string += str(i)
-            string += ":"
+            if string == "":
+                string = str(i)    
+            else:
+                string += ":"+str(i)
         return string
     
     def add(self, from_, to_, duration):
@@ -47,6 +49,7 @@ class MarkovChain:
 
     def get_next(self, seed_note):
         if seed_note is None or seed_note not in self.chain:
+            print("Random")
             random_chain = self.chain[random.choice(list(self.chain.keys()))]
             return random.choice(list(random_chain.keys()))
         next_note_counter = random.randint(0, self.sums[seed_note])
@@ -66,8 +69,7 @@ class MarkovChain:
     def get_chain(self):
         return {k: dict(v) for k, v in self.chain.items()}
 
-    def print_as_matrix(self, limit=10):
-        columns = []
+    def print_as_matrix(self, limit=1000):
         out = ''
         index = 0
         for from_note, to_notes in self.chain.items():
