@@ -37,9 +37,7 @@ class Parser:
         """
         midi = mido.MidiFile(self.filename)
         # print("Ticks per beat - ", midi.ticks_per_beat)
-        self.ticks_per_beat = midi.ticks_per_beat
-        previous_chunk = []
-        current_chunk = []
+        # self.ticks_per_beat = midi.ticks_per_beat
         time=[0]
         for track in midi.tracks:
             prev=[]
@@ -59,8 +57,11 @@ class Parser:
                     for vp in prev:
                         for vc in curr:
                             self.markov_chain.add(vp.bytes(), vc.bytes())
+                    # print(prev, curr)
+
                     prev = curr
                     curr = []
+
                 else:
                     index += 1
         # print("timme", time)
@@ -113,8 +114,8 @@ class Parser:
         #     for message in track:
         #         if verbose:
         #             print(message, midi.ticks_per_beat)
-        #         if message.type == "set_tempo":
-        #             self.tempo = message.tempo
+                # if message.type == "set_tempo":
+                #     self.tempo = message.tempo
         #         elif message.type != "note_off":
         #             if message.time == 0:
         #                 current_chunk.append(message.bytes())
@@ -158,5 +159,5 @@ if __name__ == "__main__":
     # parser = argparse.ArgumentParser()
     # parser.add_argument("input_file", help="The midi file input")
     # args = parser.parse_args()
-    print(Parser("m1.mid", verbose=True).markov_chain.print_as_matrix())
+    print(Parser("COMETOGE.mid", verbose=True).markov_chain.print_as_matrix())
     # print('No issues parsing {}'.format(args.input_file))

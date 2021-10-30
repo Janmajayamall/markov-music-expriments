@@ -10,6 +10,8 @@ def inspect(filename):
     for i, track in enumerate(mid.tracks):
         print('Track {}: {}'.format(i, track.name))
         for message in track:
+            if message.type == "set_tempo":
+                print("tempo" , message.tempo)
             print(message)
             print(message.bytes())
             # arr = message.bytes()
@@ -31,5 +33,12 @@ def inspect(filename):
     #     print(key, val)
 
 if __name__ == '__main__':
-    inspect("o1.mid")
+    inspect("aladcrisis.mid")
+
+
+# 1. Make different probability set for different instruments
+# 2. Categorise data by note & velocity & program
+# 3. Create different tracks for each program
+# 4. Create 
+
     
