@@ -7,6 +7,7 @@ store={}
 def inspect(filename):
     mid = mido.MidiFile(filename)
     # print(mid.headers)
+
     for i, track in enumerate(mid.tracks):
         print('Track {}: {}'.format(i, track.name))
         for message in track:
@@ -33,7 +34,7 @@ def inspect(filename):
     #     print(key, val)
 
 if __name__ == '__main__':
-    inspect("aladcrisis.mid")
+    inspect("o1.mid")
 
 
 # 1. Make different probability set for different instruments
@@ -42,3 +43,5 @@ if __name__ == '__main__':
 # 4. Create 
 
     
+#ref
+# 1. https://sound.stackexchange.com/questions/24231/difference-between-channel-and-track-in-midi-files

@@ -12,13 +12,13 @@ from markov_chain import MarkovChain
 
 class Parser:
 
-    def __init__(self, filename, verbose=False):
+    def __init__(self, filenames, verbose=False):
         """
         This is the constructor for a Serializer, which will serialize
         a midi given the filename and generate a markov chain of the
         notes in the midi.
         """
-        self.filename = filename
+        self.filenames = filenames
         # The tempo is number representing the number of microseconds
         # per beat.
         self.tempo = None
@@ -27,106 +27,56 @@ class Parser:
         # ticks_per_beat.
         self.ticks_per_beat = None
         self.markov_chain = MarkovChain()
-        self._parse(verbose=verbose)
+        for i in filenames:
+            self._parse(i, verbose=verbose)
 
-    def _parse(self, verbose=False):
+    def _parse(self, filename, verbose=False):
         """
         This function handles the reading of the midi and chunks the
         notes into sequenced "chords", which are inserted into the
         markov chain.
         """
-        midi = mido.MidiFile(self.filename)
+        midi = mido.MidiFile(filename)
         # print("Ticks per beat - ", midi.ticks_per_beat)
         # self.ticks_per_beat = midi.ticks_per_beat
-        time=[0]
+        track = None
+
+        for i in midi.tracks:
+            for msg in i:
+                if msg.type == "program_change":
+                    track = i
+                    break
+            if track != None:
+                break
+
+        program = None
         for track in midi.tracks:
             prev=[]
             curr=[]
             index = 0
+            # print("   damoi")
             while index < len(track):
-                if (track[index].type == "note_on" or track[index].type == "note_off") and track[index].time != 0:
-                    time.append(track[index].time)
-
-                if track[index].type == "note_on":
+                if track[index].type == "program_change":
+                    program = track[index].program
+                    print(program)
+                    index += 1
+                elif (track[index].type == "note_off"):
+                    self.markov_chain.add_time(track[index].time, program)
+                    index += 1
+                elif track[index].type == "note_on":
+                    self.markov_chain.add_time(track[index].time, program)
                     curr.append(track[index])
                     index += 1
                     while index < len(track) and track[index].type == "note_on" and track[index].time == 0:
                         curr.append(track[index])
                         index += 1
-                    
                     for vp in prev:
                         for vc in curr:
-                            self.markov_chain.add(vp.bytes(), vc.bytes())
-                    # print(prev, curr)
-
+                            self.markov_chain.add(vp.bytes(), vc.bytes(), program)
                     prev = curr
                     curr = []
-
                 else:
                     index += 1
-        # print("timme", time)
-        self.markov_chain.set_time(time)
-
-            # for msg in track:
-            #     if (msg.type == "note_on" and msg.time != 0) or msg.type == "note_off":
-            #         # make the current state
-            #         for vp in prev:
-            #             for vc in curr:
-            #                 self.markov_chain.add(vp.bytes(), vc.bytes())
-            #         prev=curr
-            #         curr=[]
-            #         if msg.type == "note_on":
-            #             # print(msg.channel)
-            #             curr.append(msg)
-            #     if msg.type == "note_on" and msg.time == 0:
-            #         # print(msg.channel)
-            #         curr.append(msg)
-            #     if (msg.time != 0):
-            #         time.append(msg.time)
-            # self.markov_chain.set_time(time)
-            
-                
-
-                    # print(msg)
-                    # if msg.time != 0:
-                    #     #crete connections
-                    #     if len(curr) != 0:
-                    #         # print("-------")
-                    #         # print(msg.time)
-                    #         # print(prev)
-                    #         # print(curr)
-                    #         # print("-------")
-                    #         ctime = curr[0].time
-                    #         # print(ctime)
-                    #         # print(curr)
-                    #         for vp in prev:
-                    #             for vc in curr:
-                    #                 print("---------------------")
-                    #                 print(vp,vc)
-                    #                 print(vp.bytes(),vc.bytes())
-                    #                 print("---------------------")
-                    #                 self.markov_chain.add(vp.bytes(), vc.bytes(), ctime)
-                    #     prev=curr
-                    #     curr=[]
-                    # curr.append(msg)
-            
-        # for track in midi.tracks:
-        #     for message in track:
-        #         if verbose:
-        #             print(message, midi.ticks_per_beat)
-                # if message.type == "set_tempo":
-                #     self.tempo = message.tempo
-        #         elif message.type != "note_off":
-        #             if message.time == 0:
-        #                 current_chunk.append(message.bytes())
-        #             else:
-        #                 current_chunk.append(message.bytes())
-        #                 self._sequence(previous_chunk,
-        #                                current_chunk,
-        #                                message.time)
-        #                 previous_chunk = current_chunk
-        #                 current_chunk = []
-
 
     def _sequence(self, previous_chunk, current_chunk, duration):
         """
@@ -159,5 +109,5 @@ if __name__ == "__main__":
     # parser = argparse.ArgumentParser()
     # parser.add_argument("input_file", help="The midi file input")
     # args = parser.parse_args()
-    print(Parser("COMETOGE.mid", verbose=True).markov_chain.print_as_matrix())
+    print(Parser(["COMETOGE.mid", "m1.mid"], verbose=True).markov_chain.print_as_matrix())
     # print('No issues parsing {}'.format(args.input_file))

@@ -10,9 +10,9 @@ Note = namedtuple('Note', ['note', 'duration'])
 class MarkovChain:
 
     def __init__(self):
-        self.chain = defaultdict(dict)
-        self.sums = defaultdict(int)
-        self.time = []
+        self.chains = {}
+        self.sums = {}
+        self.times = {}
 
     @staticmethod
     def create_from_dict(dict):
@@ -31,6 +31,7 @@ class MarkovChain:
 
     def format_val(self, val):
         string = ""
+        val = val[1:]
         for i in val:
             if string == "":
                 string = str(i)    
@@ -38,30 +39,54 @@ class MarkovChain:
                 string += ":"+str(i)
         return string
     
-    def add(self, from_, to_):
+    def add(self, from_, to_, program):
+        print(from_, to_, program)
         _from = self.format_val(from_)
         _to = self.format_val(to_)
-        if _to not in self.chain[_from] :
-            self.chain[_from][_to] = 0
-        self.chain[_from][_to] += 1
-        self.sums[_from] += 1
-    
-    def set_time(self, dist):
-        self.time = dist
 
-    def get_next(self, seed_note):
-        if seed_note is None or seed_note not in self.chain:
+        if program not in self.chains:
+            self.chains[program] = {}
+        
+        if _from not in self.chains[program]:
+            self.chains[program][_from] = {}
+        
+        if _to not in self.chains[program][_from]:
+            self.chains[program][_from][_to] = 0
+
+        self.chains[program][_from][_to] += 1
+
+        if program not in self.sums:
+            self.sums[program] = {}
+        
+        if _from not in self.sums[program]:
+            self.sums[program][_from] = 0
+
+        self.sums[program][_from] += 1
+        
+        
+    
+    def add_time(self, duration, program):
+        if program not in self.times:
+            self.times[program] = []
+        self.times[program].append(duration)
+
+    def get_next(self, program, seed_note):
+        chain = self.chains[program]
+
+        if seed_note is None or seed_note not in chain:
             print("Random")
-            random_chain = self.chain[random.choice(list(self.chain.keys()))]
+            random_chain = chain[random.choice(list(chain.keys()))]
             return random.choice(list(random_chain.keys()))
-        next_note_counter = random.randint(0, self.sums[seed_note])
-        for note, frequency in self.chain[seed_note].items():
+        print("Random1")
+        next_note_counter = random.randint(0, self.sums[program][seed_note])
+        for note, frequency in chain[seed_note].items():
             next_note_counter -= frequency
             if next_note_counter <= 0:
                 return note
             
-    def get_time(self):
-        return random.choice(self.time)
+    def get_time(self, program):
+        time = self.times[program]
+        return [random.choice(time),random.choice(time)]
 
     def merge(self, other):
         assert isinstance(other, MarkovChain)
@@ -76,20 +101,24 @@ class MarkovChain:
 
     def print_as_matrix(self, limit=1000):
         out = ''
-        index = 0
-        for from_note, to_notes in self.chain.items():
-            out += " "
-            out += from_note
-            out += " &&&& "
-            for note in to_notes:
-                out += note
-                out += "--" 
-                out += str(to_notes[note])
-                out += "-- " 
-            out += "\n"
-            index += 1
-            # if index >= limit :
-            #     break
+        for program, program_dict in self.chains.items():
+            out += '\n ----------------'
+            out += str(program)
+            out += '---------------- \n'
+            index = 0
+            for from_note, to_notes in program_dict.items():
+                out += '\n'
+                out += from_note
+                out += " && "
+                for note in to_notes:
+                    out += note
+                    out += "--" 
+                    out += str(to_notes[note])
+                    out += "-- " 
+                out += "\n"
+                index += 1
+                # if index >= limit :
+                #     break
         print(out)
 
         # _col = lambda string: '{}'.format(string)
