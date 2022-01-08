@@ -34,7 +34,7 @@ class Generator:
                 if channel > 15:
                     continue
                 track = mido.MidiTrack()
-                track.extend([mido.MetaMessage('set_tempo', tempo=1875000, time=0)])
+                track.extend([mido.MetaMessage('set_tempo', tempo=468750, time=0)])
                 track.extend([mido.Message('program_change', channel=channel, program=int(program), time=0)])
                 last_note = None
                 # Generate a sequence of 100 notes
@@ -51,5 +51,7 @@ class Generator:
 if __name__ == "__main__":
     import sys
     from parser import Parser
-    chain = Parser(["Mario_Paint_Gnat_Attack_Boss_Theme.mid", "Mario_is_Missing_NES-New_York.mid", "MARIOBRO.mid", "sms_underground.mid"]).get_chain()
+    chain = Parser(["2.mid"]).get_chain()
     Generator.load(chain).generate("o1.mid")
+
+    #  "3.mid", "4.mid",
